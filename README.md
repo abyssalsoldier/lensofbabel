@@ -1,4 +1,4 @@
-# Lantern of Babel
+# Lens of Babel
 
 A small Windows tray app, written in Rust with Tauri v2, that translates selected text in **any** window using Google Translate's free endpoint.
 
