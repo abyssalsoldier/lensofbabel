@@ -4,6 +4,7 @@ mod hotkeys;
 mod ocr;
 mod popup;
 mod selection;
+mod theme;
 mod translate;
 mod tray;
 
@@ -127,6 +128,7 @@ fn save_config(app: AppHandle, state: State<AppState>, mut settings: config::Set
     }
 
     config::save(&app, &settings)?;
+    theme::apply_window_theme(&app, &settings.theme);
     *state.settings.lock().unwrap() = settings.clone();
     let _ = app.emit("config:changed", &settings);
     apply_hotkeys(&app)
@@ -187,6 +189,11 @@ fn reset_popup_size(app: AppHandle, state: State<AppState>) -> Result<(), String
 }
 
 #[tauri::command]
+fn get_accent() -> Option<theme::Accent> {
+    theme::accent()
+}
+
+#[tauri::command]
 fn snip_done(app: AppHandle, x: f64, y: f64, width: f64, height: f64) {
     actions::finish_screen(&app, x, y, width, height);
 }
@@ -212,6 +219,8 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle().clone();
             let settings = config::load(&handle);
+            theme::apply_window_theme(&handle, &settings.theme);
+            theme::watch(&handle);
             let cb_handle = handle.clone();
             let hotkeys = hotkeys::HotkeyManager::start(move |action| actions::on_hotkey(&cb_handle, action));
             app.manage(AppState {
@@ -282,6 +291,7 @@ pub fn run() {
             popup_resize,
             popup_remember_size,
             reset_popup_size,
+            get_accent,
             snip_done,
             snip_cancel,
             popup_hold

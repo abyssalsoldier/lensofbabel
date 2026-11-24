@@ -31,6 +31,8 @@ features = [
     "Graphics_Imaging",
     "Media_Ocr",
     "Storage_Streams",
+    "UI",
+    "UI_ViewManagement",
     "Win32_Foundation",
     "Win32_Graphics_Gdi",
     "Win32_System_Com",

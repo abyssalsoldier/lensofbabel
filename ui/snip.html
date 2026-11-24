@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Select text on screen</title>
   <link rel="stylesheet" href="common.css">
+  <script src="theme.js" defer></script>
   <style>
     html, body { height: 100%; overflow: hidden; background: transparent; }
     body {
@@ -14,7 +15,7 @@
     /* While dragging, the box's huge shadow dims everything around it. */
     body.dragging { background: transparent; }
     .box {
-      position: fixed; display: none; border: 1.5px solid #5b92f0;
+      position: fixed; display: none; border: 1.5px solid var(--accent);
       box-shadow: 0 0 0 200vmax rgba(0, 0, 0, 0.32);
     }
     body.dragging .box { display: block; }

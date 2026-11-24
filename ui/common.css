@@ -1,45 +1,54 @@
+/* Colours follow the Windows theme:
+   - light/dark via prefers-color-scheme (Windows "app mode"), or the Settings override;
+   - accent via --win-accent-* set by theme.js from the Windows accent colour. */
 :root {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #eef0f3;
-  --text: #1c1f24;
-  --muted: #646b75;
-  --border: #d9dde3;
-  --accent: #2f6fde;
+  --bg: #f3f3f3;
+  --surface: #fbfbfb;
+  --surface-2: #f0f0f0;
+  --control: #ffffff;
+  --text: #1b1b1b;
+  --muted: #5f5f5f;
+  --border: #e3e3e3;
+  --control-border: #d0d0d0;
+  --accent: var(--win-accent-dark, #005fb8);
   --accent-text: #ffffff;
-  --danger: #c4342d;
-  --ok: #1f8a4c;
-  --radius: 10px;
+  --danger: #c42b1c;
+  --ok: #0f7b0f;
+  --radius: 8px;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #17191d;
-    --surface: #202328;
-    --surface-2: #2a2e34;
-    --text: #e8eaed;
-    --muted: #9aa1ab;
-    --border: #363b43;
-    --accent: #5b92f0;
-    --accent-text: #0d1117;
-    --danger: #f0716a;
-    --ok: #55c58a;
+    --bg: #202020;
+    --surface: #2b2b2b;
+    --surface-2: #333333;
+    --control: #2d2d2d;
+    --text: #ffffff;
+    --muted: #b8b8b8;
+    --border: #3a3a3a;
+    --control-border: #454545;
+    --accent: var(--win-accent-light, #60cdff);
+    --accent-text: #000000;
+    --danger: #ff99a4;
+    --ok: #6ccb5f;
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #17191d;
-  --surface: #202328;
-  --surface-2: #2a2e34;
-  --text: #e8eaed;
-  --muted: #9aa1ab;
-  --border: #363b43;
-  --accent: #5b92f0;
-  --accent-text: #0d1117;
-  --danger: #f0716a;
-  --ok: #55c58a;
+  --bg: #202020;
+  --surface: #2b2b2b;
+  --surface-2: #333333;
+  --control: #2d2d2d;
+  --text: #ffffff;
+  --muted: #b8b8b8;
+  --border: #3a3a3a;
+  --control-border: #454545;
+  --accent: var(--win-accent-light, #60cdff);
+  --accent-text: #000000;
+  --danger: #ff99a4;
+  --ok: #6ccb5f;
   color-scheme: dark;
 }
 
@@ -56,26 +65,44 @@ body { background: var(--bg); }
 button, select, input, textarea { font: inherit; color: inherit; }
 
 button {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 7px;
-  padding: 5px 12px;
+  border: 1px solid var(--control-border);
+  background: var(--control);
+  border-radius: 5px;
+  padding: 4px 12px;
   cursor: pointer;
 }
 button:hover { background: var(--surface-2); }
+button:active { opacity: 0.85; }
 button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 button.primary:hover { filter: brightness(1.08); }
-button.icon { padding: 4px 8px; }
+button.icon { padding: 3px 8px; }
 
 select, input[type="text"], input[type="number"] {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 7px;
-  padding: 5px 8px;
+  border: 1px solid var(--control-border);
+  border-bottom-color: var(--muted);
+  background: var(--control);
+  border-radius: 5px;
+  padding: 4px 8px;
 }
 
+input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+
+::selection { background: var(--accent); color: var(--accent-text); }
+
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Thin Windows-style scrollbars. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--control-border); border-radius: 5px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); background-clip: content-box; }
+::-webkit-scrollbar-track { background: transparent; }
 
 .muted { color: var(--muted); }
 .error { color: var(--danger); }
 .ok { color: var(--ok); }
+
+/* Windows high-contrast themes: let the system colours take over. */
+@media (forced-colors: active) {
+  button, select, input { border: 1px solid ButtonText; }
+  button.primary { background: Highlight; color: HighlightText; }
+}
