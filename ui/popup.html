@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Translation</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    html, body { background: transparent; overflow: hidden; }
+    body { padding: 6px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18); display: flex; flex-direction: column;
+      max-height: calc(100vh - 12px); overflow: hidden;
+    }
+    /* User-sized popup: the card fills the window and the result area scrolls. */
+    body.fixed .card { height: calc(100vh - 12px); }
+    header { display: flex; align-items: center; gap: 6px; padding: 6px 8px 4px 12px; font-size: 12px; cursor: move; user-select: none; }
+    header select, header button { cursor: pointer; }
+    header .langs { flex: 1; }
+    header select { padding: 1px 4px; font-size: 12px; max-width: 150px; }
+    .close { border: 0; background: transparent; padding: 0 6px; font-size: 15px; color: var(--muted); }
+    .result { padding: 4px 12px 8px; font-size: 15px; white-space: pre-wrap; word-wrap: break-word; overflow: auto; flex: 1; min-height: 40px; }
+    /* Drag handle between the translation and the original text. */
+    .splitter { flex: none; height: 10px; cursor: ns-resize; position: relative; touch-action: none; }
+    .splitter::before {
+      content: ""; position: absolute; left: 50%; top: 4px; width: 36px; height: 3px; margin-left: -18px;
+      border-radius: 2px; background: var(--border);
+    }
+    .splitter:hover::before, .splitter.dragging::before { background: var(--muted); }
+    .original {
+      flex: none; padding: 0 12px 6px; font-size: 12px; white-space: pre-wrap; word-wrap: break-word;
+      max-height: var(--original-max, 3.4em); overflow: auto; user-select: text;
+    }
+    .original[contenteditable="plaintext-only"] { cursor: text; border-radius: 4px; outline: none; }
+    .original[contenteditable="plaintext-only"]:focus { background: var(--surface-2); color: var(--text); }
+    footer { display: flex; gap: 6px; padding: 6px 8px 8px; border-top: 1px solid var(--border); }
+    footer button { font-size: 12px; padding: 3px 10px; }
+    footer .spacer { flex: 1; }
+    .card { position: relative; }
+    /* Bottom-right resize grip: three diagonal lines. */
+    .grip {
+      position: absolute; right: 0; bottom: 0; width: 18px; height: 18px;
+      cursor: nwse-resize; border-bottom-right-radius: 12px; z-index: 2;
+      background:
+        linear-gradient(135deg, transparent 0 45%, var(--muted) 45% 52%, transparent 52% 62%,
+          var(--muted) 62% 69%, transparent 69% 79%, var(--muted) 79% 86%, transparent 86%);
+      opacity: 0.55;
+    }
+    .grip:hover { opacity: 1; }
+    footer { padding-right: 22px; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <header data-tauri-drag-region>
+      <span class="langs muted" id="langs" data-tauri-drag-region></span>
+      <select id="target" aria-label="Translate to"></select>
+      <button class="close" id="close" title="Close (Esc)" aria-label="Close">✕</button>
+    </header>
+    <div class="result" id="result"></div>
+    <div class="splitter" id="splitter" title="Drag to show more of the original text (double-click to toggle)"></div>
+    <div class="original muted" id="original"></div>
+    <footer id="footer">
+      <button id="copy">Copy</button>
+      <button id="replace">Replace selection</button>
+      <span class="spacer"></span>
+      <button id="open">Open</button>
+    </footer>
+    <div class="grip" id="grip" title="Drag to resize" aria-hidden="true"></div>
+  </div>
+  <script src="languages.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

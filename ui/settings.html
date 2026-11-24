@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Translator Settings</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    body { padding: 18px 20px; }
+    h1 { font-size: 20px; margin: 0 0 14px; font-weight: 600; }
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 18px 0 8px; font-weight: 600; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 14px; }
+    .row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+    .row:last-child { border-bottom: 0; }
+    .row label { flex: 1; }
+    .row .hint { display: block; font-size: 12px; color: var(--muted); }
+    .row select, .row input[type="text"] { width: 200px; }
+    .row input[type="number"] { width: 80px; }
+    .hotkey { text-align: center; cursor: pointer; caret-color: transparent; }
+    .hotkey.recording { border-color: var(--accent); color: var(--accent); }
+    .actions { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+    .actions .msg { flex: 1; font-size: 13px; }
+    .banner { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--danger); color: var(--danger); margin-bottom: 10px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Settings</h1>
+  <div id="banner" class="banner" hidden></div>
+
+  <h2>Languages</h2>
+  <div class="card">
+    <div class="row"><label for="sourceLang">Translate from</label><select id="sourceLang"></select></div>
+    <div class="row"><label for="targetLang">Translate to</label><select id="targetLang"></select></div>
+  </div>
+
+  <h2>Hotkeys</h2>
+  <div class="card">
+    <div class="row">
+      <label for="popupHotkey">Show translation popup<span class="hint">Select text in any app, then press this.</span></label>
+      <input type="text" id="popupHotkey" class="hotkey" readonly>
+    </div>
+    <div class="row">
+      <label for="replaceEnabled">Enable replace mode<span class="hint">Pastes the translation over the selected text.</span></label>
+      <input type="checkbox" id="replaceEnabled">
+    </div>
+    <div class="row">
+      <label for="replaceHotkey">Replace selection with translation</label>
+      <input type="text" id="replaceHotkey" class="hotkey" readonly>
+    </div>
+    <div class="row">
+      <label for="screenEnabled">Enable screen text (OCR)<span class="hint">Drag a box over any text on screen, even text you can't select. Only that box is captured; it stays in memory and is read on this PC.</span></label>
+      <input type="checkbox" id="screenEnabled">
+    </div>
+    <div class="row">
+      <label for="screenHotkey">Translate text on screen</label>
+      <input type="text" id="screenHotkey" class="hotkey" readonly>
+    </div>
+    <div class="row">
+      <label for="clipboardFallback">Clipboard fallback<span class="hint">If an app doesn't expose its selection through accessibility, copy it briefly with Ctrl+C. The clipboard is put back afterwards.</span></label>
+      <input type="checkbox" id="clipboardFallback">
+    </div>
+  </div>
+
+  <h2>General</h2>
+  <div class="card">
+    <div class="row">
+      <label for="autostart">Start with Windows<span class="hint">Adds a per-user startup entry. You can also manage it in Task Manager → Startup.</span></label>
+      <input type="checkbox" id="autostart">
+    </div>
+    <div class="row">
+      <label for="popupDismissSecs">Auto-close popup after (seconds)<span class="hint">0 keeps it open until you click away or press Esc.</span></label>
+      <input type="number" id="popupDismissSecs" min="0" max="120">
+    </div>
+    <div class="row">
+      <label>Popup size<span class="hint">Drag the popup's edges to resize it, and drag its header to move it. Your size is remembered.</span></label>
+      <button id="resetPopupSize">Reset to automatic</button>
+    </div>
+    <div class="row">
+      <label for="theme">Theme</label>
+      <select id="theme">
+        <option value="system">System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="actions">
+    <span id="msg" class="msg"></span>
+    <button id="close">Close</button>
+    <button id="save" class="primary">Save</button>
+  </div>
+
+  <script src="languages.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>

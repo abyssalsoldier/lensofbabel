@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Translator</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    body { height: 100vh; display: flex; flex-direction: column; padding: 14px; gap: 10px; }
+    .bar { display: flex; align-items: center; gap: 8px; }
+    .bar select { flex: 1; min-width: 0; }
+    .bar .spacer { flex: 1; }
+    .panes { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-height: 0; }
+    .pane {
+      display: flex; flex-direction: column; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius); min-height: 0;
+    }
+    textarea, .output {
+      flex: 1; border: 0; background: transparent; resize: none; padding: 12px 14px;
+      font-size: 16px; line-height: 1.5; overflow: auto; white-space: pre-wrap; word-wrap: break-word;
+    }
+    textarea:focus { outline: none; }
+    .pane-foot { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-top: 1px solid var(--border); min-height: 38px; }
+    .pane-foot .info { flex: 1; font-size: 12px; }
+    @media (max-width: 640px) { .panes { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <select id="source" aria-label="Source language"></select>
+    <button id="swap" class="icon" title="Swap languages" aria-label="Swap languages">⇄</button>
+    <select id="target" aria-label="Target language"></select>
+    <button id="settings" class="icon" title="Settings" aria-label="Settings">⚙</button>
+  </div>
+  <div class="panes">
+    <div class="pane">
+      <textarea id="input" placeholder="Type or paste text" autofocus spellcheck="false"></textarea>
+      <div class="pane-foot">
+        <span id="detected" class="info muted"></span>
+        <button id="clear" class="icon" title="Clear">✕</button>
+      </div>
+    </div>
+    <div class="pane">
+      <div id="output" class="output" aria-live="polite"></div>
+      <div class="pane-foot">
+        <span id="status" class="info muted"></span>
+        <button id="copy">Copy</button>
+      </div>
+    </div>
+  </div>
+  <script src="languages.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
