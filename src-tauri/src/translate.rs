@@ -35,7 +35,7 @@ impl Client {
     pub fn new() -> Self {
         let http = reqwest::Client::builder()
             // Honest, identifiable User-Agent.
-            .user_agent(concat!("Translator/", env!("CARGO_PKG_VERSION"), " (Windows desktop app)"))
+            .user_agent(concat!("LensOfBabel/", env!("CARGO_PKG_VERSION"), " (Windows desktop app)"))
             .timeout(Duration::from_secs(15))
             .build()
             .expect("failed to build HTTP client");

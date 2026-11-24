@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 use crate::AppState;
 
 pub fn create(app: &AppHandle) -> tauri::Result<()> {
-    let open = MenuItem::with_id(app, "open", "Open Translator", true, None::<&str>)?;
+    let open = MenuItem::with_id(app, "open", "Open Lens of Babel", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
     let pause = CheckMenuItem::with_id(app, "pause", "Pause hotkeys", true, false, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
@@ -16,7 +16,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
 
     let pause_item = pause.clone();
     let mut builder = TrayIconBuilder::with_id("tray")
-        .tooltip("Translator")
+        .tooltip("Lens of Babel Translator")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(move |app, event| match event.id().as_ref() {
@@ -27,7 +27,7 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
                 app.state::<AppState>().paused.store(paused, Ordering::SeqCst);
                 let _ = crate::apply_hotkeys(app);
                 if let Some(tray) = app.tray_by_id("tray") {
-                    let _ = tray.set_tooltip(Some(if paused { "Translator (hotkeys paused)" } else { "Translator" }));
+                    let _ = tray.set_tooltip(Some(if paused { "Lens of Babel Translator (hotkeys paused)" } else { "Lens of Babel Translator" }));
                 }
             }
             "quit" => app.exit(0),

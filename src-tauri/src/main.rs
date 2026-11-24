@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    translator_lib::run()
+    lens_of_babel_lib::run()
 }

@@ -287,5 +287,5 @@ pub fn run() {
             popup_hold
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Translator");
+        .expect("error while running Lens of Babel Translator");
 }

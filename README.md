@@ -19,7 +19,7 @@ All three hotkeys can be changed in Settings, and replace and screen text can ea
 - **Settings:** languages, both hotkeys (click the field and press the keys), replace mode on/off, clipboard fallback on/off, Start with Windows, auto-close timer and theme.
 - **Tray menu:** Open, Settings, Pause hotkeys, Quit. Closing a window only hides it.
 
-Settings are stored in `%APPDATA%\dev.local.translator\config.json`.
+Settings are stored in `%APPDATA%\io.github.abyssalsoldier.lensofbabel\config.json`.
 
 ## Build
 
@@ -34,7 +34,7 @@ cargo tauri build               # release exe + installers in target\release\bun
 ```
 
 Release output:
-- `src-tauri\target\release\translator.exe`: a standalone exe.
+- `src-tauri\target\release\lens-of-babel.exe`: a standalone exe.
 - `bundle\nsis\*-setup.exe`: per-user installer that needs no admin rights (recommended).
 - `bundle\msi\*.msi`: per-machine installer for IT deployment; needs admin rights.
 

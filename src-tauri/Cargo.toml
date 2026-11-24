@@ -1,11 +1,11 @@
 [package]
-name = "translator"
+name = "lens-of-babel"
 version = "0.1.0"
-description = "Translate selected text in any window"
+description = "Lens of Babel Translator: translate selected or on-screen text in any window"
 edition = "2021"
 
 [lib]
-name = "translator_lib"
+name = "lens_of_babel_lib"
 crate-type = ["rlib"]
 
 [build-dependencies]
