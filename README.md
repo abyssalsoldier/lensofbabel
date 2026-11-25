@@ -2,6 +2,16 @@
 
 A small Windows tray app, written in Rust with Tauri v2, that translates selected text in **any** window using Google Translate's free endpoint.
 
+## Download
+
+**[Download the latest release](https://github.com/abyssalsoldier/lensofbabel/releases/latest)**
+
+- `LensOfBabel-x.y.z-setup.exe`: recommended. An install wizard that adds a Start menu shortcut and an uninstaller. It can also add a desktop shortcut and turn on Start with Windows.
+- `LensOfBabel-x.y.z.msi`: installs for all users on the machine, for IT deployment. Needs admin rights.
+- `LensOfBabel-x.y.z-portable.zip`: nothing to install. Extract it and run `LensOfBabel.exe`.
+
+Windows 10 or 11. The downloads aren't code-signed yet, so Windows SmartScreen may warn the first time you run one: choose **More info → Run anyway**.
+
 ## Usage
 
 | Action | Default hotkey |
