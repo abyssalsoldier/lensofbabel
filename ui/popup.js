@@ -2,10 +2,13 @@ const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
 
 const $ = (id) => document.getElementById(id);
-const result = $("result"), original = $("original"), langs = $("langs"), target = $("target");
+const result = $("result"), original = $("original"), source = $("source"), target = $("target");
+const arrow = $("arrow");
 const footer = $("footer"), replaceBtn = $("replace"), copyBtn = $("copy");
 
+fillLanguages(source, true);
 fillLanguages(target, false);
+const autoOption = source.options[0];
 
 const appWindow = window.__TAURI__.window.getCurrentWindow();
 
@@ -121,13 +124,14 @@ async function translate() {
   copyBtn.textContent = "Copy";
   fit();
   try {
-    const res = await invoke("translate", { text: current.text, source: current.source, target: target.value });
+    const res = await invoke("translate", { text: current.text, source: source.value, target: target.value });
     if (id !== requestId) return;
     translated = res.text;
     result.textContent = res.text;
     result.className = "result";
-    const from = current.source === "auto" ? res.detectedSource : current.source;
-    langs.textContent = from ? `${languageName(from)} →` : "";
+    if (source.value === "auto") {
+      autoOption.text = res.detectedSource ? `${languageName(res.detectedSource)} (detected)` : "Detect language";
+    }
     footer.hidden = false;
   } catch (e) {
     if (id !== requestId) return;
@@ -148,7 +152,8 @@ listen("popup:show", (e) => {
   translated = "";
   replaceBtn.hidden = !current.replaceEnabled;
   if (current.error) {
-    langs.textContent = "";
+    source.hidden = true;
+    arrow.hidden = true;
     result.textContent = current.error;
     result.className = "result muted";
     original.textContent = "";
@@ -161,6 +166,11 @@ listen("popup:show", (e) => {
     return;
   }
   target.hidden = false;
+  source.hidden = false;
+  arrow.hidden = false;
+  autoOption.text = "Detect language";
+  source.value = current.source || "auto";
+  if (source.selectedIndex < 0) source.value = "auto";
   original.hidden = false;
   splitter.hidden = false;
   // OCR text can contain mistakes, so let the user correct it.
@@ -174,6 +184,12 @@ listen("popup:show", (e) => {
 });
 
 target.addEventListener("change", () => current && !current.error && translate());
+// Auto-detection is sometimes wrong, so the source language can be changed too.
+source.addEventListener("change", () => {
+  if (!current || current.error) return;
+  if (source.value !== "auto") autoOption.text = "Detect language";
+  translate();
+});
 
 let editTimer = null;
 original.addEventListener("input", () => {
@@ -185,9 +201,11 @@ original.addEventListener("input", () => {
     if (current.text.trim()) translate();
   }, 600);
 });
-// Keep the popup open while the dropdown list is showing.
-target.addEventListener("focus", () => invoke("popup_hold", { hold: true }));
-target.addEventListener("blur", () => invoke("popup_hold", { hold: false }));
+// Keep the popup open while a dropdown list is showing.
+for (const select of [source, target]) {
+  select.addEventListener("focus", () => invoke("popup_hold", { hold: true }));
+  select.addEventListener("blur", () => invoke("popup_hold", { hold: false }));
+}
 
 copyBtn.addEventListener("click", async () => {
   if (!translated) return;

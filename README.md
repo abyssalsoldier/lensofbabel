@@ -24,7 +24,7 @@ All three hotkeys can be changed in Settings, and replace and screen text can ea
 
 **Screen text** uses the OCR engine built into Windows. It can read the languages whose OCR packs are installed (Windows Settings → Time & Language → Language & region); your display language is always included. If "Translate from" is set to a specific language with an installed OCR pack, that language is used for reading the text. In the popup you can click the recognised text to correct mistakes; the translation updates as you edit.
 
-- **Popup:** Copy, Replace selection, Open (in the main window), and a target-language picker that re-translates. Close it with Esc or by clicking away; there is also an optional auto-close timer.
+- **Popup:** Copy, Replace selection, Open (in the main window), and source- and target-language pickers that re-translate. The source picker shows the detected language; if detection got it wrong, pick the right one. Close it with Esc or by clicking away; there is also an optional auto-close timer.
 - **Main window:** opened by left-clicking the tray icon. It works like Google Translate: type or paste text and it translates as you type.
 - **Settings:** languages, both hotkeys (click the field and press the keys), replace mode on/off, clipboard fallback on/off, Start with Windows, auto-close timer and theme.
 - **Tray menu:** Open, Settings, Pause hotkeys, Quit. Closing a window only hides it.

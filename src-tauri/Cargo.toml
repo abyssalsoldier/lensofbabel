@@ -1,6 +1,6 @@
 [package]
 name = "lens-of-babel"
-version = "0.1.1"
+version = "0.1.2"
 description = "Lens of Babel Translator: translate selected or on-screen text in any window"
 edition = "2021"
 

@@ -18,8 +18,9 @@
     body.fixed .card { height: calc(100vh - 12px); }
     header { display: flex; align-items: center; gap: 6px; padding: 6px 8px 4px 12px; font-size: 12px; cursor: move; user-select: none; }
     header select, header button { cursor: pointer; }
-    header .langs { flex: 1; }
-    header select { padding: 1px 4px; font-size: 12px; max-width: 150px; }
+    header .spacer { flex: 1; align-self: stretch; }
+    header select { padding: 1px 4px; font-size: 12px; max-width: 140px; min-width: 0; flex: 0 1 auto; }
+    header .arrow { flex: none; }
     .close { border: 0; background: transparent; padding: 0 6px; font-size: 15px; color: var(--muted); }
     .result { padding: 4px 12px 8px; font-size: 15px; white-space: pre-wrap; word-wrap: break-word; overflow: auto; flex: 1; min-height: 40px; }
     /* Drag handle between the translation and the original text. */
@@ -55,8 +56,10 @@
 <body>
   <div class="card" id="card">
     <header data-tauri-drag-region>
-      <span class="langs muted" id="langs" data-tauri-drag-region></span>
+      <select id="source" aria-label="Translate from" title="Change this if the language was detected wrongly"></select>
+      <span class="arrow muted" id="arrow" data-tauri-drag-region>→</span>
       <select id="target" aria-label="Translate to"></select>
+      <span class="spacer" data-tauri-drag-region></span>
       <button class="close" id="close" title="Close (Esc)" aria-label="Close">✕</button>
     </header>
     <div class="result" id="result"></div>
