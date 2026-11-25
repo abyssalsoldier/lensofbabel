@@ -50,7 +50,8 @@ jobs:
 
       - name: Build installers (NSIS .exe and .msi)
         working-directory: src-tauri
-        run: npx --yes @tauri-apps/cli@2 build
+        # Pinned: src-tauri/installer/installer.nsi is this version's NSIS template.
+        run: npx --yes @tauri-apps/cli@2.12.6 build
 
       - name: Collect release files
         run: |
@@ -65,7 +66,7 @@ jobs:
           $portable = "portable/LensOfBabel"
           New-Item -ItemType Directory -Force $portable | Out-Null
           Copy-Item src-tauri/target/release/lens-of-babel.exe "$portable/LensOfBabel.exe"
-          Copy-Item README.md $portable
+          Copy-Item README.md, LICENSE $portable
           Compress-Archive -Path $portable -DestinationPath "dist/LensOfBabel-$version-portable.zip"
 
           Get-ChildItem dist | ForEach-Object {
@@ -82,7 +83,7 @@ jobs:
 
           | File | What it is |
           |---|---|
-          | ``LensOfBabel-*-setup.exe`` | **Recommended.** Per-user installer, no admin rights needed. Adds a Start menu shortcut and an uninstaller. |
+          | ``LensOfBabel-*-setup.exe`` | **Recommended.** Install wizard: install just for you (no admin rights) or for everyone, Start menu shortcut, optional desktop shortcut and Start with Windows, and an uninstaller. |
           | ``LensOfBabel-*.msi`` | Per-machine installer for IT deployment (needs admin). Adds a Start menu shortcut. |
           | ``LensOfBabel-*-portable.zip`` | Standalone exe, no install. Extract and run ``LensOfBabel.exe``. |
 

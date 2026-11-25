@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Lens of Babel Translator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "io.github.abyssalsoldier.lensofbabel",
   "build": {
     "frontendDist": "../ui"
@@ -72,7 +72,8 @@
     "active": true,
     "targets": ["nsis", "msi"],
     "publisher": "Lens of Babel",
-    "copyright": "",
+    "copyright": "Copyright (c) 2026 abyssalsoldier",
+    "licenseFile": "../LICENSE",
     "category": "Utility",
     "shortDescription": "Translate selected text in any window",
     "longDescription": "A tray app that translates selected text in any window with a hotkey.",
@@ -84,7 +85,18 @@
     ],
     "windows": {
       "webviewInstallMode": { "type": "skip" },
-      "nsis": { "installMode": "currentUser" }
+      "nsis": {
+        "installMode": "both",
+        "installerIcon": "icons/icon.ico",
+        "sidebarImage": "installer/nsis-sidebar.bmp",
+        "headerImage": "installer/nsis-header.bmp",
+        "installerHooks": "installer/hooks.nsh",
+        "template": "installer/installer.nsi"
+      },
+      "wix": {
+        "bannerPath": "installer/msi-banner.bmp",
+        "dialogImagePath": "installer/msi-dialog.bmp"
+      }
     }
   }
 }

@@ -19,6 +19,8 @@ All three hotkeys can be changed in Settings, and replace and screen text can ea
 - **Settings:** languages, both hotkeys (click the field and press the keys), replace mode on/off, clipboard fallback on/off, Start with Windows, auto-close timer and theme.
 - **Tray menu:** Open, Settings, Pause hotkeys, Quit. Closing a window only hides it.
 
+The installer shows the MIT licence in `LICENSE`.
+
 Settings are stored in `%APPDATA%\io.github.abyssalsoldier.lensofbabel\config.json`.
 
 ## Build
@@ -35,8 +37,8 @@ cargo tauri build               # release exe + installers in target\release\bun
 
 Release output:
 - `src-tauri\target\release\lens-of-babel.exe`: a standalone exe.
-- `bundle\nsis\*-setup.exe`: per-user installer that needs no admin rights (recommended).
-- `bundle\msi\*.msi`: per-machine installer for IT deployment; needs admin rights.
+- `bundle\nsis\*-setup.exe`: install wizard (recommended). It offers a per-user install with no admin rights or an all-users install, adds a Start menu shortcut and an uninstaller, and on the last page offers a desktop shortcut and Start with Windows. Its pages, artwork and hooks are in `src-tauri\installer\`.
+- `bundle\msi\*.msi`: per-machine installer for IT deployment; needs admin rights. Adds a Start menu shortcut.
 
 ## Layout
 
@@ -64,13 +66,13 @@ The app is designed to be EDR-friendly. Every behaviour that EDR could plausibly
 | Clipboard fallback (synthetic Ctrl+C) | Low–moderate | Used only when UIA finds nothing, only on hotkey press, and the previous clipboard is restored. It can be turned off in Settings. There is no clipboard monitoring at all. |
 | Replace (synthetic Ctrl+V) | Moderate | Only on hotkey press or the popup's button. It first tries UIA `ValuePattern.SetValue` when a field's whole value is selected. It can be turned off in Settings. |
 | Screen text (OCR) | Moderate | Screen capture is a spyware trait. It runs only after the hotkey **and** a box drag. Only the dragged box is captured, once, with GDI `BitBlt` (as screenshot tools do). The pixels stay in memory: never saved to disk, never uploaded. OCR runs locally with `Windows.Media.Ocr`, and only the recognised text is translated. It can be turned off in Settings. |
-| Start with Windows | Moderate | Writes an HKCU `Run` value. It is **off by default** and only written when the user ticks the box. HKCU only: no HKLM, scheduled tasks or services. It shows up in Task Manager → Startup. |
+| Start with Windows | Moderate | Writes an HKCU `Run` value. It is **off by default** and only written when the user ticks the box. HKCU only: no HKLM, scheduled tasks or services. The exe path is quoted (no "unquoted path" entry). It shows up in Task Manager → Startup. The setup.exe wizard offers the same setting (also off by default) and writes the same value; the uninstaller removes it. |
 | Network | Low | HTTPS to `translate.googleapis.com` only, and only when the user asks for a translation. Uses Windows Schannel and the system proxy, with an honest `User-Agent`. No telemetry or update checks. |
 | Raw input | Low | Tauri's windowing layer (tao) registers keyboard/mouse raw input by default. It is turned off with `DeviceEventFilter::Always` (`RIDEV_REMOVE`). |
 | Imported key-state APIs | Low | `GetAsyncKeyState`, `GetKeyState` and `GetKeyboardState` appear in the import table because tao uses them to process keyboard messages for **its own windows**. Our code never calls them. |
 | Unsigned exe | Moderate–high | Version info, product name and publisher are embedded; there is no packer or obfuscation. **Sign the exe and installer before distributing** (for example with Azure Trusted Signing). |
-| Installer | Low | The WebView2 bootstrapper is **not** bundled or downloaded (`webviewInstallMode: skip`), so the installer never downloads and runs code. The NSIS installer is per-user with no elevation. |
-| Elevation | n/a | Never requested. Windows blocks synthetic input to elevated (admin) windows, so replace and the clipboard fallback don't work in those windows. That is expected. |
+| Installer | Low | The WebView2 bootstrapper is **not** bundled or downloaded (`webviewInstallMode: skip`), so the installer never downloads and runs code. The NSIS installer asks whether to install for the current user (no elevation) or all users (`installMode: both`). Because of that choice, Windows asks an **administrator** account for UAC approval when the installer starts. Standard users get no prompt and the per-user install. |
+| Elevation | n/a | The app never requests it. The installer may (see above), but it starts the app as the normal user. Windows blocks synthetic input to elevated (admin) windows, so replace and the clipboard fallback don't work in those windows. That is expected. |
 
 Never used: process injection, reading other processes' memory, `CreateRemoteThread`, downloading or running code, self-update, hidden processes, packers, obfuscation, or saving typed or translated text to disk.
 

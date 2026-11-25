@@ -1,4 +1,5 @@
 mod actions;
+mod autostart;
 mod config;
 mod hotkeys;
 mod ocr;
@@ -13,7 +14,6 @@ use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager, State, WindowEvent};
-use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
 pub struct AppState {
     pub settings: Mutex<config::Settings>,
@@ -98,7 +98,7 @@ async fn translate(
 fn get_config(app: AppHandle, state: State<AppState>) -> config::Settings {
     let mut s = state.settings.lock().unwrap().clone();
     // Show the real autostart state (the user may have removed it in Task Manager).
-    if let Ok(enabled) = app.autolaunch().is_enabled() {
+    if let Ok(enabled) = autostart::is_enabled(&app.package_info().name) {
         s.autostart = enabled;
     }
     s
@@ -121,9 +121,9 @@ fn save_config(app: AppHandle, state: State<AppState>, mut settings: config::Set
     bindings(&settings)?;
 
     // EDR note: autostart writes an HKCU Run key, and only when the user asks for it.
-    let launcher = app.autolaunch();
-    if settings.autostart != launcher.is_enabled().unwrap_or(false) {
-        let r = if settings.autostart { launcher.enable() } else { launcher.disable() };
+    let name = &app.package_info().name;
+    if settings.autostart != autostart::is_enabled(name).unwrap_or(false) {
+        let r = if settings.autostart { autostart::enable(name) } else { autostart::disable(name) };
         r.map_err(|e| format!("Could not change Start with Windows: {e}"))?;
     }
 
@@ -215,9 +215,10 @@ pub fn run() {
         .device_event_filter(tauri::DeviceEventFilter::Always)
         // Must be first: a second launch just focuses the running instance.
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_window(app, "main")))
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--autostart"])))
         .setup(|app| {
             let handle = app.handle().clone();
+            // Quote the path in a startup entry an older version wrote unquoted.
+            let _ = autostart::repair_legacy(&handle.package_info().name);
             let settings = config::load(&handle);
             theme::apply_window_theme(&handle, &settings.theme);
             theme::watch(&handle);
@@ -240,7 +241,7 @@ pub fn run() {
             tray::create(&handle)?;
 
             let hotkeys_ok = apply_hotkeys(&handle).is_ok();
-            let from_autostart = std::env::args().any(|a| a == "--autostart");
+            let from_autostart = std::env::args().any(|a| a == autostart::ARG);
             if !hotkeys_ok {
                 show_window(&handle, "settings");
             } else if !from_autostart {

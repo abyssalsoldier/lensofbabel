@@ -1,6 +1,6 @@
 [package]
 name = "lens-of-babel"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lens of Babel Translator: translate selected or on-screen text in any window"
 edition = "2021"
 
@@ -14,7 +14,6 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-single-instance = "2"
-tauri-plugin-autostart = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # Default features use native-tls (Windows Schannel: the OS TLS stack and certificate
@@ -38,6 +37,7 @@ features = [
     "Win32_System_Com",
     "Win32_System_DataExchange",
     "Win32_System_Ole",
+    "Win32_System_Registry",
     "Win32_System_Threading",
     "Win32_System_Variant",
     "Win32_UI_Accessibility",
