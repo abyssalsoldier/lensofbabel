@@ -2,6 +2,10 @@
 
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use tauri::{AppHandle, Manager};
+use tauri_plugin_notification::NotificationExt;
+
+use crate::AppState;
 
 const LATEST_API: &str = "https://api.github.com/repos/abyssalsoldier/lensofbabel/releases/latest";
 pub const RELEASES_PAGE: &str = "https://github.com/abyssalsoldier/lensofbabel/releases/latest";
@@ -54,6 +58,56 @@ pub fn is_newer(latest: &str, current: &str) -> bool {
         }
     }
     false
+}
+
+/// Checks shortly after startup and then once a day, while "check automatically" is on.
+pub fn start_background(app: &AppHandle) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        // Let startup finish (and the network come up after login) first.
+        tokio_sleep(Duration::from_secs(20)).await;
+        loop {
+            let enabled = app.state::<AppState>().settings.lock().unwrap().auto_update_check;
+            if enabled {
+                if let Ok(info) = check().await {
+                    if info.available {
+                        found(&app, &info.latest, true);
+                    }
+                }
+            }
+            tokio_sleep(Duration::from_secs(24 * 60 * 60)).await;
+        }
+    });
+}
+
+async fn tokio_sleep(d: Duration) {
+    tokio::time::sleep(d).await;
+}
+
+/// Records a newer version: adds a download item to the tray menu and, with
+/// `notify`, shows a Windows notification once per version.
+pub fn found(app: &AppHandle, latest: &str, notify: bool) {
+    let state = app.state::<AppState>();
+    *state.update_available.lock().unwrap() = Some(latest.to_string());
+    crate::tray::refresh(app);
+    if !notify {
+        return;
+    }
+    let settings = {
+        let mut s = state.settings.lock().unwrap();
+        if s.update_notified == latest {
+            return;
+        }
+        s.update_notified = latest.to_string();
+        s.clone()
+    };
+    let _ = crate::config::save(app, &settings);
+    let _ = app
+        .notification()
+        .builder()
+        .title("Lens of Babel update available")
+        .body(format!("Version {latest} is out (you have {CURRENT}). Right-click the tray icon and choose Download update."))
+        .show();
 }
 
 /// Opens the latest release page in the default browser.

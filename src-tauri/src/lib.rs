@@ -32,6 +32,8 @@ pub struct AppState {
     pub snip_monitor: Mutex<Option<ocr::Region>>,
     pub snip_shown_at: Mutex<Option<Instant>>,
     pub client: translate::Client,
+    /// Newer version found on GitHub, if any.
+    pub update_available: Mutex<Option<String>>,
 }
 
 pub fn show_window(app: &AppHandle, label: &str) {
@@ -82,6 +84,7 @@ pub fn apply_hotkeys(app: &AppHandle) -> Result<(), String> {
 struct Status {
     hotkey_error: Option<String>,
     paused: bool,
+    update_available: Option<String>,
 }
 
 #[tauri::command]
@@ -111,8 +114,13 @@ fn app_version() -> &'static str {
 }
 
 #[tauri::command]
-async fn check_for_update() -> Result<update::UpdateInfo, String> {
-    update::check().await
+async fn check_for_update(app: AppHandle) -> Result<update::UpdateInfo, String> {
+    let info = update::check().await?;
+    if info.available {
+        // The user is looking at the result already, so no notification.
+        update::found(&app, &info.latest, false);
+    }
+    Ok(info)
 }
 
 #[tauri::command]
@@ -122,7 +130,11 @@ fn open_releases_page() -> Result<(), String> {
 
 #[tauri::command]
 fn get_status(state: State<AppState>) -> Status {
-    Status { hotkey_error: state.hotkey_error.lock().unwrap().clone(), paused: state.paused.load(Ordering::SeqCst) }
+    Status {
+        hotkey_error: state.hotkey_error.lock().unwrap().clone(),
+        paused: state.paused.load(Ordering::SeqCst),
+        update_available: state.update_available.lock().unwrap().clone(),
+    }
 }
 
 #[tauri::command]
@@ -133,6 +145,7 @@ fn save_config(app: AppHandle, state: State<AppState>, mut settings: config::Set
         let current = state.settings.lock().unwrap();
         settings.popup_width = current.popup_width;
         settings.popup_height = current.popup_height;
+        settings.update_notified = current.update_notified.clone();
     }
     bindings(&settings)?;
 
@@ -231,6 +244,7 @@ pub fn run() {
         .device_event_filter(tauri::DeviceEventFilter::Always)
         // Must be first: a second launch just focuses the running instance.
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_window(app, "main")))
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let handle = app.handle().clone();
             // Quote the path in a startup entry an older version wrote unquoted.
@@ -253,8 +267,10 @@ pub fn run() {
                 snip_monitor: Mutex::new(None),
                 snip_shown_at: Mutex::new(None),
                 client: translate::Client::new(),
+                update_available: Mutex::new(None),
             });
             tray::create(&handle)?;
+            update::start_background(&handle);
 
             let hotkeys_ok = apply_hotkeys(&handle).is_ok();
             let from_autostart = std::env::args().any(|a| a == autostart::ARG);

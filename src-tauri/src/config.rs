@@ -26,6 +26,10 @@ pub struct Settings {
     /// Popup size chosen by the user, in logical pixels; 0 = size to content.
     pub popup_width: u32,
     pub popup_height: u32,
+    /// Check GitHub for a newer release at startup and once a day.
+    pub auto_update_check: bool,
+    /// Latest version the user was already notified about, so each is announced once.
+    pub update_notified: String,
 }
 
 impl Default for Settings {
@@ -44,6 +48,8 @@ impl Default for Settings {
             theme: "system".into(),
             popup_width: 0,
             popup_height: 0,
+            auto_update_check: true,
+            update_notified: String::new(),
         }
     }
 }

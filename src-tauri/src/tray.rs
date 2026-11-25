@@ -1,34 +1,75 @@
 use std::sync::atomic::Ordering;
-use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
+use tauri::menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Wry};
 
 use crate::AppState;
 
-pub fn create(app: &AppHandle) -> tauri::Result<()> {
+/// Builds the tray menu from the current state (paused, update available).
+fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
+    let state = app.state::<AppState>();
+    let paused = state.paused.load(Ordering::SeqCst);
+    let update = state.update_available.lock().unwrap().clone();
+
     let open = MenuItem::with_id(app, "open", "Open Lens of Babel", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
-    let pause = CheckMenuItem::with_id(app, "pause", "Pause hotkeys", true, false, None::<&str>)?;
+    let pause = CheckMenuItem::with_id(app, "pause", "Pause hotkeys", true, paused, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let sep1 = PredefinedMenuItem::separator(app)?;
     let sep2 = PredefinedMenuItem::separator(app)?;
-    let menu = Menu::with_items(app, &[&open, &settings, &sep1, &pause, &sep2, &quit])?;
+    let sep3 = PredefinedMenuItem::separator(app)?;
+    let update_item = match &update {
+        Some(v) => Some(MenuItem::with_id(app, "update", format!("Download update ({v})…"), true, None::<&str>)?),
+        None => None,
+    };
 
-    let pause_item = pause.clone();
+    let mut items: Vec<&dyn IsMenuItem<Wry>> = Vec::new();
+    if let Some(item) = &update_item {
+        items.push(item);
+        items.push(&sep3);
+    }
+    items.extend([&open as &dyn IsMenuItem<Wry>, &settings, &sep1, &pause, &sep2, &quit]);
+    Menu::with_items(app, &items)
+}
+
+fn tooltip(app: &AppHandle) -> String {
+    let state = app.state::<AppState>();
+    let mut t = String::from("Lens of Babel Translator");
+    if state.paused.load(Ordering::SeqCst) {
+        t.push_str(" (hotkeys paused)");
+    }
+    if let Some(v) = state.update_available.lock().unwrap().as_ref() {
+        t.push_str(&format!("\nUpdate available: {v}"));
+    }
+    t
+}
+
+/// Rebuilds the tray menu and tooltip after the state changed.
+pub fn refresh(app: &AppHandle) {
+    let Some(tray) = app.tray_by_id("tray") else { return };
+    if let Ok(menu) = build_menu(app) {
+        let _ = tray.set_menu(Some(menu));
+    }
+    let _ = tray.set_tooltip(Some(tooltip(app)));
+}
+
+pub fn create(app: &AppHandle) -> tauri::Result<()> {
     let mut builder = TrayIconBuilder::with_id("tray")
-        .tooltip("Lens of Babel Translator")
-        .menu(&menu)
+        .tooltip(tooltip(app))
+        .menu(&build_menu(app)?)
         .show_menu_on_left_click(false)
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "open" => crate::show_window(app, "main"),
             "settings" => crate::show_window(app, "settings"),
+            "update" => {
+                let _ = crate::update::open_releases_page();
+            }
             "pause" => {
-                let paused = pause_item.is_checked().unwrap_or(false);
-                app.state::<AppState>().paused.store(paused, Ordering::SeqCst);
+                let state = app.state::<AppState>();
+                let paused = !state.paused.load(Ordering::SeqCst);
+                state.paused.store(paused, Ordering::SeqCst);
                 let _ = crate::apply_hotkeys(app);
-                if let Some(tray) = app.tray_by_id("tray") {
-                    let _ = tray.set_tooltip(Some(if paused { "Lens of Babel Translator (hotkeys paused)" } else { "Lens of Babel Translator" }));
-                }
+                refresh(app);
             }
             "quit" => app.exit(0),
             _ => {}

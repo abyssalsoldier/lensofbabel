@@ -19,7 +19,7 @@ let render = function (cfg) {
   config = cfg;
   applyTheme(cfg.theme);
   for (const key of ["sourceLang", "targetLang", "popupHotkey", "replaceHotkey", "screenHotkey", "theme"]) $(key).value = cfg[key];
-  for (const key of ["replaceEnabled", "screenEnabled", "clipboardFallback", "autostart"]) $(key).checked = cfg[key];
+  for (const key of ["replaceEnabled", "screenEnabled", "clipboardFallback", "autostart", "autoUpdateCheck"]) $(key).checked = cfg[key];
   $("popupDismissSecs").value = cfg.popupDismissSecs;
   $("replaceHotkey").disabled = !cfg.replaceEnabled;
   $("screenHotkey").disabled = !cfg.screenEnabled;
@@ -30,6 +30,12 @@ async function load() {
   const status = await invoke("get_status");
   banner.hidden = !status.hotkeyError;
   banner.textContent = status.hotkeyError ? `Hotkey problem: ${status.hotkeyError}` : "";
+  // An update found by the automatic check.
+  if (status.updateAvailable && $("getUpdate").hidden) {
+    $("updateStatus").className = "hint";
+    $("updateStatus").textContent = `Version ${status.updateAvailable} is available.`;
+    $("getUpdate").hidden = false;
+  }
 }
 
 $("replaceEnabled").addEventListener("change", (e) => { $("replaceHotkey").disabled = !e.target.checked; });
@@ -89,6 +95,7 @@ $("save").addEventListener("click", async () => {
     screenEnabled: $("screenEnabled").checked,
     clipboardFallback: $("clipboardFallback").checked,
     autostart: $("autostart").checked,
+    autoUpdateCheck: $("autoUpdateCheck").checked,
     popupDismissSecs: Math.max(0, Math.min(120, parseInt($("popupDismissSecs").value, 10) || 0)),
     theme: $("theme").value,
   };
