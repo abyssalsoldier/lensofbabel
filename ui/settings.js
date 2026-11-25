@@ -114,6 +114,31 @@ $("resetPopupSize").addEventListener("click", async () => {
   }
 });
 
+// --- About: version and update check ---------------------------------------
+invoke("app_version").then((v) => { $("version").textContent = v; });
+
+$("checkUpdate").addEventListener("click", async () => {
+  const btn = $("checkUpdate"), status = $("updateStatus");
+  btn.disabled = true;
+  status.className = "hint";
+  status.textContent = "Checking…";
+  try {
+    const info = await invoke("check_for_update");
+    $("getUpdate").hidden = !info.available;
+    status.textContent = info.available
+      ? `Version ${info.latest} is available.`
+      : `You have the latest version (${info.current}).`;
+  } catch (e) {
+    status.className = "hint error";
+    status.textContent = String(e);
+  }
+  btn.disabled = false;
+});
+
+$("getUpdate").addEventListener("click", () => {
+  invoke("open_releases_page").catch((e) => setMsg(String(e), "error"));
+});
+
 // Track unsaved edits so a refresh never discards them.
 let dirty = false;
 document.addEventListener("change", () => { dirty = true; });

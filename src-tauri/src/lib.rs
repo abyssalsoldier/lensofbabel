@@ -8,6 +8,7 @@ mod selection;
 mod theme;
 mod translate;
 mod tray;
+mod update;
 
 use serde::Serialize;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
@@ -102,6 +103,21 @@ fn get_config(app: AppHandle, state: State<AppState>) -> config::Settings {
         s.autostart = enabled;
     }
     s
+}
+
+#[tauri::command]
+fn app_version() -> &'static str {
+    update::CURRENT
+}
+
+#[tauri::command]
+async fn check_for_update() -> Result<update::UpdateInfo, String> {
+    update::check().await
+}
+
+#[tauri::command]
+fn open_releases_page() -> Result<(), String> {
+    update::open_releases_page()
 }
 
 #[tauri::command]
@@ -295,7 +311,10 @@ pub fn run() {
             get_accent,
             snip_done,
             snip_cancel,
-            popup_hold
+            popup_hold,
+            app_version,
+            check_for_update,
+            open_releases_page
         ])
         .run(tauri::generate_context!())
         .expect("error while running Lens of Babel Translator");

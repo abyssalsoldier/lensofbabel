@@ -26,7 +26,7 @@ All three hotkeys can be changed in Settings, and replace and screen text can ea
 
 - **Popup:** Copy, Replace selection, Open (in the main window), and source- and target-language pickers that re-translate. The source picker shows the detected language; if detection got it wrong, pick the right one. Close it with Esc or by clicking away; there is also an optional auto-close timer.
 - **Main window:** opened by left-clicking the tray icon. It works like Google Translate: type or paste text and it translates as you type.
-- **Settings:** languages, both hotkeys (click the field and press the keys), replace mode on/off, clipboard fallback on/off, Start with Windows, auto-close timer and theme.
+- **Settings:** languages, both hotkeys (click the field and press the keys), replace mode on/off, clipboard fallback on/off, Start with Windows, auto-close timer and theme. The About section shows the installed version and has a **Check for updates** button, which asks GitHub for the latest release and opens its download page if there is a newer one.
 - **Tray menu:** Open, Settings, Pause hotkeys, Quit. Closing a window only hides it.
 
 The installer shows the MIT licence in `LICENSE`.
