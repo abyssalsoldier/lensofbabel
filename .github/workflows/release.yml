@@ -1,0 +1,91 @@
+name: Release
+
+# Push a tag like v0.1.0 to build and publish a release,
+# or run manually from the Actions tab with an existing tag.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check version matches tag
+        run: |
+          $conf = Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json
+          if ("v$($conf.version)" -ne $env:TAG) {
+            throw "tauri.conf.json version $($conf.version) does not match tag $env:TAG"
+          }
+
+      - name: Test
+        working-directory: src-tauri
+        run: cargo test --release
+
+      - name: Build installers (NSIS .exe and .msi)
+        working-directory: src-tauri
+        run: npx --yes @tauri-apps/cli@2 build
+
+      - name: Collect release files
+        run: |
+          $version = $env:TAG.TrimStart('v')
+          $bundle = "src-tauri/target/release/bundle"
+          New-Item -ItemType Directory -Force dist | Out-Null
+
+          Copy-Item "$bundle/nsis/*-setup.exe" "dist/LensOfBabel-$version-setup.exe"
+          Copy-Item "$bundle/msi/*.msi"        "dist/LensOfBabel-$version.msi"
+
+          # Portable zip: the standalone exe plus the README.
+          $portable = "portable/LensOfBabel"
+          New-Item -ItemType Directory -Force $portable | Out-Null
+          Copy-Item src-tauri/target/release/lens-of-babel.exe "$portable/LensOfBabel.exe"
+          Copy-Item README.md $portable
+          Compress-Archive -Path $portable -DestinationPath "dist/LensOfBabel-$version-portable.zip"
+
+          Get-ChildItem dist | ForEach-Object {
+            "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower())  $($_.Name)"
+          } | Set-Content dist/SHA256SUMS.txt
+          Get-ChildItem dist
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $notes = @"
+          ## Downloads
+
+          | File | What it is |
+          |---|---|
+          | ``LensOfBabel-*-setup.exe`` | **Recommended.** Per-user installer, no admin rights needed. Adds a Start menu shortcut and an uninstaller. |
+          | ``LensOfBabel-*.msi`` | Per-machine installer for IT deployment (needs admin). Adds a Start menu shortcut. |
+          | ``LensOfBabel-*-portable.zip`` | Standalone exe, no install. Extract and run ``LensOfBabel.exe``. |
+
+          Requires Windows 10/11 with WebView2 (built into Windows 11 and up-to-date Windows 10).
+          "@
+          gh release create $env:TAG dist/* --title "Lens of Babel $env:TAG" --notes $notes
